@@ -1,0 +1,16 @@
+input:
+  version_name: "v1"
+  train_df_filename: "input-data/train_df_n=7000_v1.csv"
+  test_df_filename: "input-data/test_df_n=3000_v1.csv"
+
+boosting_parameters:
+  num_iterations: 1000
+  max_depth: 1
+  learning_rate: 0.1
+
+output:
+  model_dump_filename_header: "output-data/model_dump"
+  train_pred_prob_df_filename_header: "output-data/train_pred_prob_df"
+  test_pred_prob_df_filename_header: "output-data/test_pred_prob_df"
+  train_log_loss_filename_header: "output-data/train_log_loss"
+  test_log_loss_filename_header: "output-data/test_log_loss"
