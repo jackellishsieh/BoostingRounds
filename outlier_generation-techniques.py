@@ -1,13 +1,24 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 
-# Creates outliers for a SPECIFIC CLASS
+# Creates outliers using the hyperrectangle method
+def unifBox(X, n_art):
+    # Compute the min and max values for each column (dimension)
+    min_vals = np.min(X, axis=0)
+    max_vals = np.max(X, axis=0)
+    
+    # Randomly sample n_art vectors from the bounding hyperrectangle
+    sampled_vectors = np.random.uniform(min_vals, max_vals, (n_art, X.shape[1]))
+    
+    return sampled_vectors
+
+# Creates outliers for a SPECIFIC CLASS using the Infeas algorithm
 # Scales the Gaussian so that features with greater variance are scaled proportionally: outliers can theoretically be in any direction
 def infeasExam(X: np.array, 
-                                 n_art: int,    # The number of artificial outliers to generate
-                                 alpha: float,  # The multiplier
-                                 epsilon: float, 
-                                 mu: np.array = None, Sigma: np.array = None):
+                n_art: int,    # The number of artificial outliers to generate
+                alpha: float,  # The multiplier
+                epsilon: float, 
+                mu: np.array = None, Sigma: np.array = None):
     """
     Generate artificial outliers by perturbing the original instances in X.
 
