@@ -109,7 +109,9 @@ def infeasExam(X: np.array,
                 n_art: int,    # The number of artificial outliers to generate
                 alpha: float,  # The multiplier
                 epsilon: float, 
-                mu: np.array = None, Sigma: np.array = None):
+                mu: np.array = None, Sigma: np.array = None,
+                random_seed = None
+                ):
     """
     Generate artificial outliers by perturbing the original instances in X.
 
@@ -136,8 +138,10 @@ def infeasExam(X: np.array,
         Sigma = np.diag(feature_stdevs)
 
     # Apply a perturbation using alpha and the given distribution
+    rng = np.random.default_rng(seed = random_seed)
+    
     def perturb(instance: np.array) -> np.array:
-        noise = np.random.multivariate_normal(mu, Sigma)
+        noise = rng.multivariate_normal(mu, Sigma)
         return instance + alpha * noise
 
     # Determine whether this is a sufficient outlier using epsilon
