@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import mahalanobis
+import pandas as pd
+from typing import Optional
 
 # Custom gauss tail method (bad, doesn't really work as expected)
 def customGaussTail(X, n_art, M):
@@ -139,7 +141,6 @@ def infeasExam(X: np.array,
 
     # Apply a perturbation using alpha and the given distribution
     rng = np.random.default_rng(seed = random_seed)
-    
     def perturb(instance: np.array) -> np.array:
         noise = rng.multivariate_normal(mu, Sigma)
         return instance + alpha * noise
@@ -159,15 +160,15 @@ def infeasExam(X: np.array,
 
         if is_sufficient_outlier(art_i):
             ArtOuts.append(art_i)
-    
-    # If we already have enough, randomly sample n_art from these
+
+    # If we already have enough, randomly sample n_art from these without replacement
     # If we don't have enough yet, repeat the process atop these artificial outliers
     if len(ArtOuts) >= n_art:
-        row_indices = np.random.choice(len(ArtOuts), size = n_art, replace = False)
+        row_indices = rng.choice(len(ArtOuts), size = n_art, replace = False)
         X_art = np.array(ArtOuts)[row_indices]
     else:
         while len(ArtOuts) < n_art:
-            out_i = ArtOuts[np.random.randint(0, len(ArtOuts))] # Randomly sample an existing artificial outlier
+            out_i = ArtOuts[rng.integers(0, len(ArtOuts))] # Randomly sample an existing artificial outlier
             
             art_i = perturb(out_i)              # Perturb
             if is_sufficient_outlier(art_i):    # Add if valid
@@ -176,3 +177,22 @@ def infeasExam(X: np.array,
         X_art = np.array(ArtOuts)
     
     return X_art
+
+
+# Creates the outliers using a dataframe and a random assignment of labels
+def infeasExamRandomLabel(df: pd.DataFrame, 
+                          p_art: int,
+                          alpha: float,
+                          epsilon: float,
+                          random_seed: Optional[int] = None) -> pd.DataFrame:
+    X = df.drop("label", axis = 1).to_numpy()       # Get the datapoints without the labels
+    n = X.shape[0]
+
+    n_art = int(p_art * n)
+    X_art = infeasExam(X, n_art, alpha, epsilon,random_seed=random_seed)
+
+    rng = np.random.default_rng(seed = random_seed)
+    y_art = rng.integers(low=0, high=1, size=(n_art,), endpoint=True)
+
+    # Ensure same column names and types
+    return pd.DataFrame(np.column_stack((X_art, y_art)), columns=df.columns).astype(df.dtypes.to_dict())
